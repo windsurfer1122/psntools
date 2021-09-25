@@ -1,0 +1,99 @@
+= Building psntools
+:toc:
+
+== Prerequisites
+
+=== Prerequisites on Debian-based Linux (e.g. Ubuntu) to build for same machine/architecture
+Install generally needed packages.
+```
+apt-get install build-essential
+```
+If you want to enhance or change the included functions, then swig will be needed to re-create wrappers (e.g. Python).
+```
+apt-get install swig
+```
+If you want to change the documentation, then asciidoctor and pandoc will be needed to re-create documentation files.
+```
+apt-get install asciidoctor and pandoc
+```
+When building for Python, then install its development package and also the interpreter with pip for installation of Python packages plus support for virtual environments.
+For Python 2 it is recommended to install the future package.
+
+* Python 3
+```
+apt-get install python3 python3-dev python3-venv
+wget -N https://bootstrap.pypa.io/get-pip.py
+( umask 0022 ; python3 get-pip.py )
+```
+
+* Python 2
+```
+apt-get install python2 python2-dev
+wget -N https://bootstrap.pypa.io/pip/2.7/get-pip.py -O get-pip2.py
+( umask 0022 ; python2 get-pip2.py )
+( umask 0022 ; pip2 install --upgrade future virtualenv )
+```
+
+=== Prerequisites on Debian-based Linux (e.g. Ubuntu) to cross-build for other machine/architecture
+Install all packages from <<Prerequisites on Debian-based Linux (e.g. Ubuntu) to build for same machine/architecture, previous section>> then install additional packages.
+
+Check machine's architecture.
+```
+uname -m ; ## architecure name from Linux kernel of distro, e.g. x86_64, i686
+dpkg --print-architecture ; ## architecture name from dpkg/apt, e.g. amd64, i386
+```
+
+Install cross-platform gcc/g++.
+```
+apt-get install g++-multilib gcc-multilib
+```
+
+Enhance dpkg/apt to download/install for target architecture.
+```
+dpkg-architecture --list-known | egrep -e "x86|amd64|i[0-9]{1}86"
+dpkg --add-architecture <target architecture>
+dpkg --print-foreign-architectures
+
+apt-get update
+```
+
+Install additional packages for the target architecture.
+
+* Python 3: ```apt-get install libpython3-dev:<target architecture>```
+* Python 2: ```apt-get install libpython2-dev:<target architecture>```
+
+=== Prerequisites on Windows to build
+* Download and install https://visualstudio.microsoft.com/downloads/[Build Tools for Visual Studio]. +
+Install them with the workload "Desktop development with C++". No other components should be necessary. It is recommended to reboot your PC after installation.
+
+* Install https://cmake.org/[CMake].
+
+* Install https://asciidoctor.org/#windows[Asciidoctor] and https://pandoc.org/[pandoc].
+
+* Install http://www.swig.org/[SWIG]. Downloads are hosted on https://sourceforge.net/projects/swig/files/swigwin/[Sourceforge].
+
+== Building
+Builds are normally done via the provided scripts.
+
+=== Building on Debian-based Linux (e.g. Ubuntu)
+* psntools code: ```scripts/build-linux-psntools.sh``` +
+  Additional parameters can be given to cmake by defining `MY_CMAKE_PARAMETERS` for the build call. +
+  Example: ```MY_CMAKE_PARAMETERS='-DCUSTOM_BUILD_SWIG=ON' scripts/build-linux-psntools.sh```
+* update README.adoc for GitHub: ```scripts/build-linux-readme.sh```
+
+=== Building on Windows
+* Start the Native Tools Command Prompt fitting Python's bitness (x86 = 32.bit, x64 = 64-bit).
+* psntools code: use CMake to build
+
+== Re-creating SWIG wrappers
+Normally the SWIG wrappers are created only once, then copied to the source repository.
+Some wrappers are then enhanced for their specialized use cases.
+For Python the C wrappers and the Python module source from SWIG 4.0 are identical for Python 3 and Python 2.
+
+Whenever functions are added or enhanced, then the SWIG wrappers have to be created again and checked carefully, if necessary re-patch and re-add them.
+```
+cd <source dir of psntools>
+MY_CMAKE_PARAMETERS='-DCUSTOM_BUILD_SWIG=ON' scripts/build-linux-psntools.sh
+diff -sup build/linux-x86_64-static/target-python3/sdist/src/raprifPYTHON_wrap.c raprif/python/src/raprifPYTHON_wrap.c
+diff -sup build/linux-x86_64-static/target-python3/sdist/psntools/raprif.py raprif/python/raprif.py
+```

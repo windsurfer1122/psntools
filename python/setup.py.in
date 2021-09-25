@@ -1,0 +1,123 @@
+#!/usr/bin/env python
+# -*- coding: utf-8; tab-width: 4; indent-tabs-mode: nil; py-indent-offset: 4 -*-
+###
+### Package: @CMAKE_PROJECT_NAME@-@CMAKE_PROJECT_VERSION@
+###   Modules:
+###     raprif-@raprif_VERSION@ (extension module, non-pure)
+###
+
+## https://packaging.python.org/guides/
+## https://setuptools.readthedocs.io/en/latest/
+
+from __future__ import absolute_import, division, print_function, unicode_literals
+from builtins import *
+
+from setuptools import setup, Distribution, Extension
+import os
+
+
+class BinaryDistribution(Distribution):
+    def is_pure(self):
+        return False
+
+    def has_ext_modules(self):
+        return True
+
+## Fix a bug in distutils.command.install.finalize_options() - https://github.com/google/or-tools/issues/616
+from setuptools.command.install import install
+
+class InstallPlatlib(install):
+    def finalize_options(self):
+        install.finalize_options(self)
+        self.install_lib = self.install_platlib
+
+
+if __name__ == "__main__":
+    ## Define package variables
+    package_name = "@CMAKE_PROJECT_NAME@"
+    package_version = "@CMAKE_PROJECT_VERSION@"
+
+    ## Define RAPRIF variables and extension module (non-pure)
+    raprif_version = "@raprif_VERSION@"
+    raprif_ext_module = Extension(
+        "_raprif",
+        sources=[
+            os.path.join("src", "raprif.c"),
+            os.path.join("src", "raprifPYTHON_wrap.c"),
+        ],
+        include_dirs=[
+            "include",
+        ],
+        ## Additional MANIFEST.in needed to actually copy header files when building sdist package
+    )
+
+    ## Read the content of the README file
+    with open("README.rst", "r") as f:
+        long_description = f.read()
+
+    ## https://setuptools.readthedocs.io/en/latest/userguide/declarative_config.html#metadata
+    ## https://www.python.org/dev/peps/pep-0314/
+    ## Define setup arguments
+    setup_args = {}
+    setup_args.update(
+        ## meta data
+        name = package_name,
+        version = package_version,
+        author = "windsurfer1122",
+        author_email = "windsurfer1122@example.com",
+        url = "https://github.com/windsurfer1122/psntools",
+        keywords = "PSN,PS3,RAP,RIF",
+        #license = "GNU General Public License v3 or later (GPLv3+)", ## done via classifiers
+        description = 'Library functions for PSN packages',
+        long_description = long_description,
+        long_description_content_type = "text/x-rst",
+        ## https://pypi.org/classifiers/
+        classifiers = [
+            "Development Status :: 5 - Production/Stable",
+            "Intended Audience :: Developers",
+            "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+            "Operating System :: POSIX :: Linux",
+            "Operating System :: MacOS :: MacOS X",
+            "Operating System :: Microsoft :: Windows",
+            "Programming Language :: Python :: 2.7",
+            "Programming Language :: Python :: 3",
+            "Programming Language :: C",
+            "Topic :: Software Development :: Libraries :: Python Modules",
+        ],
+        ## definitions
+        packages = [
+            package_name,
+        ],
+        py_modules = [
+            "{0}.raprif".format(package_name),
+        ],
+        ## misc
+        distclass = BinaryDistribution,
+        cmdclass = {
+            "install": InstallPlatlib,
+        },
+    )
+    #
+    if ("@PYTHON_REQUIRED@"):
+        setup_args.update(
+            python_requires = "@PYTHON_REQUIRED@",
+        )
+    #
+    if ("@PYTHON_TARGET_TYPE@" == "sdist"):
+        setup_args.update(
+            ext_package = package_name,
+            ext_modules = [
+                raprif_ext_module,
+            ],
+            include_package_data = True, ## Enable MANIFEST.in
+        )
+    else:
+        setup_args.update(
+            package_data = {
+                package_name: [
+                    "*.so", "*.pyd", "*.dylib", ## also add binary libs
+                ],
+            },
+        )
+    #
+    setup(**setup_args)

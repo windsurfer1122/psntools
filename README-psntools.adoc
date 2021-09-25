@@ -1,0 +1,28 @@
+= psntools
+:toc:
+
+include::raprif/README.adoc[leveloffset=+1]
+
+== Installation of psntools
+
+=== psntools for Python
+As the package includes some C code a C compiler is needed for installation via `pip install psntools`.
+
+It is recommended to use virtual environments for https://docs.python.org/3/tutorial/venv.html[Python 3] and https://docs.python-guide.org/dev/virtualenvs/#lower-level-virtualenv[Python 2] to avoid side-effects with other Python applications.
+Personal preference is to use `.venv3` and `.venv2` respectively to be able to cross-test for Python 3 and Python 2.
+
+* Debian-based Linux
+** Install build environment: `apt-get install build-essential`.
+** Install via pip as mentioned above.
+
+* Windows
+** Get the __Build Tools__ from the https://visualstudio.microsoft.com/downloads/[Visual Studio download page] (link as of 2018-11).
+*** Install Build Tools with additional components via "Change..." button:
+**** Desktop Development with C++
+*** Reboot.
+** Start the Native Tools Command Prompt fitting Python's bitness (x86 = 32.bit, x64 = 64-bit).
+** Install via pip as mentioned above.
+
+== Credits
+* windsurfer1122
+* flatz (RAP/RIF support)

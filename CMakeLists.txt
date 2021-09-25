@@ -1,0 +1,40 @@
+## https://cmake.org/cmake/help/latest/index.html
+CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
+## 3.0: Basis, PROJECT(VERSION)
+
+## Define project
+PROJECT(psntools
+	VERSION 1.0.0
+	LANGUAGES NONE
+)
+
+## Log some properties for project
+MESSAGE(STATUS "Project: ${PROJECT_NAME} ${PROJECT_VERSION}")
+MESSAGE(VERBOSE "++ PROJECT_SOURCE_DIR=${PROJECT_SOURCE_DIR}")
+MESSAGE(VERBOSE "++ PROJECT_BINARY_DIR=${PROJECT_BINARY_DIR}")
+
+## Default to "Release" mode if not specified
+IF(NOT CMAKE_BUILD_TYPE)
+	SET(CMAKE_BUILD_TYPE Release)
+ENDIF(NOT CMAKE_BUILD_TYPE)
+MESSAGE(VERBOSE "++ CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}")
+
+## Define custom options
+OPTION(CUSTOM_BUILD_SWIG "Build SWIG wrappers" OFF)
+OPTION(CUSTOM_BUILD_PYTHON2 "Build Python 2 modules" ON)
+OPTION(CUSTOM_BUILD_PYTHON3 "Build Python 3 modules" ON)
+
+
+## Add subdirectories
+ADD_SUBDIRECTORY("raprif")
+
+
+## Add Python optimized (SWIG) wrappers project
+IF(NOT BUILD_SHARED_LIBS)
+	INCLUDE("python/CMakeLists.txt")
+ENDIF(NOT BUILD_SHARED_LIBS)
+
+## Add SWIG project
+IF(NOT BUILD_SHARED_LIBS AND CUSTOM_BUILD_SWIG)
+	INCLUDE("swig/CMakeLists.txt")
+ENDIF(NOT BUILD_SHARED_LIBS AND CUSTOM_BUILD_SWIG)

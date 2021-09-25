@@ -1,0 +1,8 @@
+build*/
+.venv*/
+*.tar.gz
+*.whl
+*.zip
+.*
+_*
+README.html
